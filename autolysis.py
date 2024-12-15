@@ -1,8 +1,8 @@
 import os
 import sys
 import pandas as pd
-import matplotlib as plt
-from matplotlib import pyplot as pllt
+import matplotlib 
+from matplotlib import pyplot as plt
 import seaborn as sns
 import requests
 
