@@ -1,55 +1,15 @@
 import os
 import sys
-import subprocess
-import re
 import pandas as pd
 import seaborn as sns
 import requests
 
-# Inline script metadata
-# requires-python = ">=3.12"
-# dependencies = [
-#     "chardet",
-#     "pandas",
-#     "python-dotenv",
-#     "requests",
-#     "seaborn",
-# ]
-
 # AI Proxy URL and token
 AIPROXY_URL = "https://aiproxy.sanand.workers.dev/openai/v1/"
 
-# Function to install dependencies from metadata
-def install_dependencies():
-    """Parse dependencies from script metadata and install them."""
-    try:
-        script_path = sys.argv[0]
-        with open(script_path, "r") as file:
-            content = file.read()
-
-        # Extract dependencies
-        match = re.search(r'dependencies\s*=\s*\[(.*?)\]', content, re.DOTALL)
-        if match:
-            deps = re.findall(r'"([^"]+)"', match.group(1))  # Extract dependencies within quotes
-            if deps:
-                print(f"Installing dependencies: {', '.join(deps)}")
-                subprocess.check_call([sys.executable, "-m", "pip", "install", *deps])
-            else:
-                print("No dependencies found to install.")
-        else:
-            print("No dependencies metadata found in script.")
-    except Exception as e:
-        print(f"Error installing dependencies: {e}")
-        sys.exit(1)
-
-
-
-# Install dependencies
-install_dependencies()
-
 # Ensure the script receives a filename
 if len(sys.argv) < 2:
-    print("Usage: python autolysis.py <filename>")
+    print("Usage: uv run autolysis.py <filename>")
     sys.exit(1)
 
 # Get the filename from the command-line arguments
@@ -123,6 +83,7 @@ def generate_insights(summary_stats, missing_values):
 insights = generate_insights(summary_stats, missing_values)
 
 # Create 1 distribution chart and 1 heatmap chart
+
 def create_charts(df, folder_name):
     numeric_cols = df.select_dtypes(include=['float64', 'int64']).columns
     chart_files = []
@@ -130,6 +91,7 @@ def create_charts(df, folder_name):
     # Distribution plot (for the first numeric column)
     if numeric_cols.size > 0:
         col = numeric_cols[0]
+        safe_col_name = "".join(c if c.isalnum() else "_" for c in col)  # Sanitize file name
         sns.set_theme(style="whitegrid")  # Set a consistent theme
         dist_plot = sns.displot(df, x=col, kde=True, bins=30, height=6, aspect=1.5)
         dist_filename = f"{folder_name}/chart1.png"
@@ -153,6 +115,7 @@ def create_charts(df, folder_name):
         chart_files.append(heatmap_filename)
 
     return chart_files
+
 
 # Create charts and save them to the respective folder
 folder_name = file_name.split('.')[0]  # Use the file name (without extension) as the folder name
